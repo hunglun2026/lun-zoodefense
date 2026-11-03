@@ -136,7 +136,7 @@
     // ---- 塔 ----
     const tView = new Map();
     let selected = null;
-    // 底座：石頭座＋隨等級變華麗（1 級素石、2 級加彩旗與彩色邊、3 級鍍金加光暈與星）
+    // 底座：石頭座，隨等級變華麗（1 級素石、2 級加彩色邊與小三角牌、3 級金色加光圈與星）
     function drawBase(g, t) {
       const c = t.def.color, lv = t.lv;
       g.clear();
