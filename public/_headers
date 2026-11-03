@@ -1,11 +1,12 @@
-# 靜態檔快取：HTML 每次問有沒有新版；CSS／JS 網址帶 ?v=N，改了要全站升版
+# 靜態檔快取：HTML 每次問有沒有新版；字型檔名帶雜湊、縮圖與資料網址帶 ?v=N、JS／CSS 網址帶 ?v=N，內容一變網址就變，可以放心快取一年
+# 改了 JS／CSS／資料一定要升 ?v（index.html 與 zhuyin.js 裡的 zhuyin.json）
 /fonts/*
   Cache-Control: public, max-age=31536000, immutable
 /img/thumbs/*
   Cache-Control: public, max-age=31536000, immutable
 /css/*
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=31536000, immutable
 /js/*
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=31536000, immutable
 /data/*
-  Cache-Control: public, max-age=86400
+  Cache-Control: public, max-age=31536000, immutable
