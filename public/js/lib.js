@@ -4,7 +4,7 @@
    負責：小工具、年級、自製對話框、動物資料載入（data/animals.json）、頁首與頁尾、Zoo.boot。 */
 (function () {
   "use strict";
-  const V = "2"; // 資料與縮圖的快取版號，換資料時升版
+  const V = "3"; // 資料與縮圖的快取版號，換資料時升版
 
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   function shuffle(arr) {

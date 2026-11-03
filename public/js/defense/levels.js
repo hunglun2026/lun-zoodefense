@@ -20,12 +20,12 @@
   // 塔：放塔價格固定。range 是半徑像素，rate 是幾秒打一下，dmg 是 1 級威力
   const TOWER_COST = 60;
   const TOWERS = {
-    monkey: { name: "白面捲尾猴", animal: "cebus-capucinus", color: 0xe8873a, range: 125, rate: 0.5, dmg: 8, say: "連續丟水果" },
-    giraffe: { name: "網紋長頸鹿", animal: "giraffa-camelopardalis-reticulata", color: 0xd9a520, range: 230, rate: 1.1, dmg: 15, say: "站得高看得遠" },
-    elephant: { name: "亞洲象", animal: "elephas-maximus", color: 0x3a8fd9, range: 135, rate: 1.4, dmg: 17, splash: 58, say: "長鼻子噴水，打一片" },
-    penguin: { name: "黑腳企鵝", animal: "spheniscus-demersu", color: 0x2fb5a0, range: 145, rate: 0.9, dmg: 6, slow: 0.45, say: "冰涼讓敵人變慢" },
-    turtle: { name: "紅腿象龜", animal: "chelonoidis-carbonarius", color: 0x5a9e4b, range: 105, rate: 1.8, dmg: 12, stun: 0.8, say: "硬殼一擋，敵人停住" },
-    owl: { name: "領角鴞", animal: "otus-bakkamoena", color: 0x7d5ba6, range: 175, rate: 1.2, dmg: 20, night: 1.8, say: "夜行性，晚上更強" },
+    monkey: { emoji: "🐒", shot: "🍌", name: "白面捲尾猴", animal: "cebus-capucinus", color: 0xe8873a, range: 125, rate: 0.5, dmg: 8, say: "連續丟水果" },
+    giraffe: { emoji: "🦒", shot: "🍃", name: "網紋長頸鹿", animal: "giraffa-camelopardalis-reticulata", color: 0xd9a520, range: 230, rate: 1.1, dmg: 15, say: "站得高看得遠" },
+    elephant: { emoji: "🐘", shot: "💧", name: "亞洲象", animal: "elephas-maximus", color: 0x3a8fd9, range: 135, rate: 1.4, dmg: 17, splash: 58, say: "長鼻子噴水，打一片" },
+    penguin: { emoji: "🐧", shot: "❄️", name: "黑腳企鵝", animal: "spheniscus-demersu", color: 0x2fb5a0, range: 145, rate: 0.9, dmg: 6, slow: 0.45, say: "冰涼讓敵人變慢" },
+    turtle: { emoji: "🐢", shot: "🪨", name: "紅腿象龜", animal: "chelonoidis-carbonarius", color: 0x5a9e4b, range: 105, rate: 1.8, dmg: 12, stun: 0.8, say: "硬殼一擋，敵人停住" },
+    owl: { emoji: "🦉", shot: "🪶", name: "領角鴞", animal: "otus-bakkamoena", color: 0x7d5ba6, range: 175, rate: 1.2, dmg: 20, night: 1.8, say: "夜行性，晚上更強" },
   };
   const TOWER_ORDER = ["monkey", "giraffe", "elephant", "penguin", "turtle", "owl"];
 

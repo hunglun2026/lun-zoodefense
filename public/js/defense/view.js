@@ -29,27 +29,6 @@
     r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(1, "rgba(255,255,255,0)");
     g.fillStyle = r; g.fillRect(0, 0, 32, 32);
   }));
-  // 動物縮圖 → 圓形徽章（cover 裁切），載入失敗用顏色圈加 emoji
-  function badgeTex(url, color, fallback) {
-    return new Promise((res) => {
-      const mk = (img) => canvasTex(160, 160, (g, w, h) => {
-        g.save(); g.beginPath(); g.arc(80, 80, 70, 0, Math.PI * 2); g.clip();
-        if (img) {
-          const k = Math.max(140 / img.naturalWidth, 140 / img.naturalHeight);
-          g.drawImage(img, 80 - (img.naturalWidth * k) / 2, 80 - (img.naturalHeight * k) / 2, img.naturalWidth * k, img.naturalHeight * k);
-        } else { g.fillStyle = "#" + color.toString(16).padStart(6, "0"); g.fillRect(0, 0, w, h); g.font = "70px sans-serif"; g.textAlign = "center"; g.textBaseline = "middle"; g.fillText(fallback, 80, 86); }
-        g.restore();
-        g.lineWidth = 9; g.strokeStyle = "#fff"; g.beginPath(); g.arc(80, 80, 70, 0, Math.PI * 2); g.stroke();
-        g.lineWidth = 5; g.strokeStyle = "#" + color.toString(16).padStart(6, "0"); g.beginPath(); g.arc(80, 80, 76, 0, Math.PI * 2); g.stroke();
-      });
-      if (!url) return res(mk(null));
-      const img = new Image();
-      img.onload = () => res(mk(img));
-      img.onerror = () => res(mk(null));
-      img.src = url;
-    });
-  }
-
   async function create(host, sim, hooks) {
     const L = sim.L;
     const app = new PIXI.Application();
@@ -92,14 +71,6 @@
       plus.anchor.set(0.5); g.addChild(plus);
       layers.slots.addChild(g); slotG[i] = g;
     });
-
-    // ---- 塔的徽章貼圖（載入完才開始畫）----
-    const badges = {};
-    await Promise.all(D.unlocked(sim.no).map(async (k) => {
-      const d = D.TOWERS[k];
-      const url = (G.DefThumbs && G.DefThumbs[d.animal]) || "";
-      badges[k] = await badgeTex(url, d.color, "🐾");
-    }));
 
     // ---- 物件池 ----
     const pool = {};
@@ -165,20 +136,40 @@
     // ---- 塔 ----
     const tView = new Map();
     let selected = null;
+    // 底座：石頭座＋隨等級變華麗（1 級素石、2 級加彩旗與彩色邊、3 級鍍金加光暈與星）
+    function drawBase(g, t) {
+      const c = t.def.color, lv = t.lv;
+      g.clear();
+      g.ellipse(0, 30, 40, 12).fill({ color: 0x000000, alpha: 0.28 });
+      if (lv >= 3) g.ellipse(0, 18, 46, 20).fill({ color: 0xffd23c, alpha: 0.28 });
+      g.roundRect(-30, 8, 60, 26, 9).fill(lv >= 3 ? 0xb9a46a : 0x9aa3a8).stroke({ width: 3, color: lv >= 3 ? 0x7a6530 : 0x636b70 });
+      for (let i = -1; i <= 1; i++) g.moveTo(i * 18 - 6, 12).lineTo(i * 18 - 6, 30).stroke({ width: 2, color: 0x000000, alpha: 0.12 });
+      g.ellipse(0, 10, 32, 12).fill(lv >= 3 ? 0xe9d48a : 0xc9d1d6).stroke({ width: 3, color: lv >= 2 ? c : 0x7d868b });
+      if (lv >= 2) {
+        [-1, 1].forEach((s) => {
+          g.moveTo(s * 34, 12).lineTo(s * 34, -22).stroke({ width: 3, color: 0x6b4a2b });
+          g.poly([s * 34, -22, s * 34 + s * 22, -15, s * 34, -8]).fill(c).stroke({ width: 2, color: 0xffffff });
+        });
+      }
+      for (let i = 0; i < lv; i++) {
+        const x = (i - (lv - 1) / 2) * 14;
+        g.star(x, 26, 5, 6, 3).fill(0xffd23c).stroke({ width: 1.5, color: 0x7a5a00 });
+      }
+    }
     function addTower(t) {
       const c = new PIXI.Container(); c.position.set(t.x, t.y);
       const rangeG = new PIXI.Graphics(); rangeG.visible = false;
-      const base = new PIXI.Graphics(); base.ellipse(0, 24, 30, 10).fill({ color: 0x000000, alpha: 0.25 });
-      const spr = new PIXI.Sprite(badges[t.type]); spr.anchor.set(0.5); spr.width = spr.height = 62;
-      const lv = new PIXI.Text({ text: "★", style: { fontSize: 18, fill: 0xffd23c, fontWeight: "900", stroke: { color: 0x23332b, width: 4 } } }); lv.anchor.set(0.5); lv.position.set(0, 36);
+      const base = new PIXI.Graphics(); drawBase(base, t);
+      const spr = new PIXI.Sprite(emojiTex(t.def.emoji)); spr.anchor.set(0.5, 0.82); spr.position.set(0, 12); spr.width = spr.height = 64;
+      spr.baseS = spr.scale.x;
       const ask = new PIXI.Text({ text: "?", style: { fontSize: 22, fill: 0xffffff, fontWeight: "900" } }); ask.anchor.set(0.5);
-      const bub = new PIXI.Container(); const bg2 = new PIXI.Graphics(); bg2.circle(0, 0, 15).fill(0xe8873a).stroke({ width: 3, color: 0xffffff }); bub.addChild(bg2, ask); bub.position.set(26, -30);
-      const mute = new PIXI.Text({ text: "🔇", style: { fontSize: 26 } }); mute.anchor.set(0.5); mute.position.set(0, -34); mute.visible = false;
-      c.addChild(rangeG, base, spr, lv, bub, mute);
-      c.eventMode = "static"; c.cursor = "pointer"; c.hitArea = new PIXI.Circle(0, 0, 42);
+      const bub = new PIXI.Container(); const bg2 = new PIXI.Graphics(); bg2.circle(0, 0, 15).fill(0xe8873a).stroke({ width: 3, color: 0xffffff }); bub.addChild(bg2, ask); bub.position.set(30, -34);
+      const mute = new PIXI.Text({ text: "🔇", style: { fontSize: 26 } }); mute.anchor.set(0.5); mute.position.set(0, -40); mute.visible = false;
+      c.addChild(rangeG, base, spr, bub, mute);
+      c.eventMode = "static"; c.cursor = "pointer"; c.hitArea = new PIXI.Circle(0, 0, 44);
       c.on("pointertap", () => hooks.onTower(t));
       layers.towers.addChild(c);
-      const v = { c, rangeG, spr, lv, bub, mute, kick: 0, pop: 1, t, born: 0 };
+      const v = { c, rangeG, base, spr, bub, mute, kick: 0, pop: 1, t, born: 0, face: 1, lvDrawn: t.lv };
       tView.set(t.id, v);
       c.scale.set(0.2);
       slotG[t.slot].visible = false;
@@ -197,8 +188,8 @@
     // ---- 子彈 ----
     const sView = new Map();
     function addShot(sh) {
-      const s = take("shot", () => { const q = new PIXI.Sprite(dotTex()); q.anchor.set(0.5); layers.shots.addChild(q); return q; });
-      s.visible = true; s.tint = sh.t.def.color; s.scale.set(sh.t.type === "elephant" ? 0.9 : 0.7); s.blendMode = "add";
+      const s = take("shot", () => { const q = new PIXI.Sprite(); q.anchor.set(0.5); layers.shots.addChild(q); return q; });
+      s.visible = true; s.texture = emojiTex(sh.t.def.shot); s.width = s.height = sh.t.type === "elephant" ? 34 : 28; s.tint = 0xffffff; s.blendMode = "normal"; s.rotation = 0;
       s.position.set(sh.x, sh.y);
       sView.set(sh.id, { s, sh, trail: 0 });
     }
@@ -223,7 +214,7 @@
         switch (e.k) {
           case "spawn": addEnemy(e.e); break;
           case "place": addTower(e.t); break;
-          case "fire": { const v = tView.get(e.t.id); if (v) v.kick = 1; addShot(e.shot); break; }
+          case "fire": { const v = tView.get(e.t.id); if (v) { v.kick = 1; v.face = e.shot.tx >= e.t.x ? 1 : -1; } addShot(e.shot); break; }
           case "hit": {
             const v = eView.get(e.e.id);
             if (v) { v.hitT = 0.12; v.pop = 1; drawBar(v, e.e); }
@@ -313,8 +304,12 @@
         const base = v.pop > 1 ? (v.pop = Math.max(1, v.pop - dtRaw * 2.2)) : 1;
         const idle = 1 + Math.sin(time * 3 + t.id) * 0.025;
         v.c.scale.set(ease.back(v.born) * base * idle * (1 - kick * 0.14));
-        v.spr.rotation = Math.sin(time * 2 + t.id) * 0.04 + (kick ? Math.sin(kick * 20) * 0.12 : 0);
-        v.lv.text = "★".repeat(t.lv);
+        if (v.lvDrawn !== t.lv) { v.lvDrawn = t.lv; drawBase(v.base, t); }
+        const grow = 1 + 0.12 * (t.lv - 1), lunge = 1 + kick * 0.18;
+        v.spr.scale.set(v.spr.baseS * grow * v.face * lunge, v.spr.baseS * grow * (1 - kick * 0.1));
+        v.spr.x = kick * 5 * v.face;
+        v.spr.y = 12 - Math.abs(Math.sin(time * 3 + t.id)) * 3;
+        v.spr.rotation = (kick ? Math.sin(kick * 18) * 0.14 : Math.sin(time * 2 + t.id) * 0.03);
         const canAsk = t.lv < G.DefSim.MAX_LV && t.askCd <= 0;
         v.bub.visible = canAsk && !(t.stunT > 0);
         v.bub.scale.set(1 + Math.sin(time * 6) * 0.1);
@@ -324,7 +319,7 @@
       // 子彈
       sView.forEach((q, id) => {
         const sh = q.sh;
-        q.s.position.set(sh.x, sh.y);
+        q.s.position.set(sh.x, sh.y); q.s.rotation += dtRaw * 14;
         q.trail += dtRaw;
         if (q.trail > 0.03) { q.trail = 0; burst(sh.x, sh.y, 1, { color: sh.t.def.color, speed: 8, life: 0.22, size: 0.35, add: true }); }
         if (sh.dead) { give("shot", q.s); sView.delete(id); }
