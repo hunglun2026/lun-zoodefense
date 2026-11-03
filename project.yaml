@@ -1,0 +1,10 @@
+# 動物園守護戰（獨立網站）：塔防 10 關，動物當砲塔，答「這是什麼動物？」升級。
+名稱: 動物園守護戰
+代號: zoodefense
+網址: https://zoodefense.hunglun.com
+# 發布（scripts/publish-public.sh 與 supereduweb/templates/first-publish.sh 讀這幾行）
+發布repo: hunglun2026/lun-zoodefense
+憑證名稱: hunglun2026            # steve0802\cf-tokens.txt 與 gh-tokens.txt 的鍵（gh 用「<名稱>-workflow」那把，能推 .github）
+Cloudflare帳號編號: d286dc43743f9a5e5dea99efea359ee5
+Worker名稱: zoodefense
+網域: zoodefense.hunglun.com

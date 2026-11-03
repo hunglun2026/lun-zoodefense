@@ -1,0 +1,77 @@
+[
+ {
+  "do": "goto",
+  "url": "http://127.0.0.1:8813/"
+ },
+ {
+  "do": "eval",
+  "expr": "(async()=>{localStorage.clear();localStorage.setItem('zoo-grade','mid');return '已清空儲存空間'})()"
+ },
+ {
+  "do": "resize",
+  "width": 1280,
+  "height": 900
+ },
+ {
+  "do": "goto",
+  "url": "http://127.0.0.1:8813/"
+ },
+ {
+  "do": "eval",
+  "expr": "(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));for(let i=0;i<100&&!document.querySelector('.df-lv');i++)await w(100);const b=[...document.querySelectorAll('.df-lv')];return '[1 選關] PIXI='+(typeof PIXI)+' 關卡鈕='+b.length+' 鎖住='+b.filter(x=>x.disabled).length+' 標題='+document.title})()"
+ },
+ {
+  "do": "shot",
+  "path": "D:/claude測試資料/lun-zoodefense/2026-11-03/defense-01-選關.png"
+ },
+ {
+  "do": "goto",
+  "url": "http://127.0.0.1:8813/robots.txt"
+ },
+ {
+  "do": "goto",
+  "url": "http://127.0.0.1:8813/#m=1"
+ },
+ {
+  "do": "eval",
+  "expr": "(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));for(let i=0;i<150&&!(window.Defense&&document.querySelector('.df-canvas'));i++)await w(100);await w(600);const c=document.querySelector('.df-canvas');const r=c.getBoundingClientRect();return '[2 進第1關] 畫布='+Math.round(r.width)+'x'+Math.round(r.height)+' 放塔格='+Defense.sim.L.slotsAt.length+' 金幣='+Defense.sim.gold})()"
+ },
+ {
+  "do": "eval",
+  "expr": "(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));window.tapAt=(x,y)=>{const c=document.querySelector('.df-canvas');const r=c.getBoundingClientRect();const cx=r.left+x/960*r.width,cy=r.top+y/540*r.height;const o={bubbles:true,clientX:cx,clientY:cy,pointerId:1,pointerType:'mouse',isPrimary:true,button:0,buttons:1};c.dispatchEvent(new PointerEvent('pointermove',o));c.dispatchEvent(new PointerEvent('pointerdown',o));c.dispatchEvent(new PointerEvent('pointerup',Object.assign({},o,{buttons:0})))};const s=Defense.sim.L.slotsAt[0];tapAt(s[0],s[1]);await w(400);const sheet=document.querySelector('.df-sheet');const n=sheet?sheet.querySelectorAll('.df-pick').length:0;if(sheet)sheet.querySelector('.df-pick').click();await w(500);return '[3 點放塔格] 選單='+(sheet?'有':'沒有')+' 可選動物='+n+' 場上塔='+Defense.sim.towers.length+' 金幣='+Defense.sim.gold})()"
+ },
+ {
+  "do": "eval",
+  "expr": "(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));const sl=Defense.sim.L.slotsAt;for(let i=1;i<3;i++){tapAt(sl[i][0],sl[i][1]);await w(300);const s=document.querySelector('.df-sheet');if(s)s.querySelector('.df-pick').click();await w(300)}document.getElementById('b-next').click();await w(6500);return '[4 開第1波6.5秒後] 塔='+Defense.sim.towers.length+' 敵人='+Defense.sim.enemies.length+' 擊殺='+Defense.sim.kills+' 愛心='+Defense.sim.hearts+' 金幣='+Defense.sim.gold})()"
+ },
+ {
+  "do": "shot",
+  "path": "D:/claude測試資料/lun-zoodefense/2026-11-03/defense-02-第1關戰鬥.png"
+ },
+ {
+  "do": "eval",
+  "expr": "(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));const t=Defense.sim.towers[0];tapAt(t.x,t.y);await w(500);const m=document.querySelector('.df-modal');if(!m)return '[5 點塔] 沒有跳出問答 askCd='+t.askCd+' lv='+t.lv;const alt=(m.querySelector('img.photo')||{}).alt||'';const opts=[...m.querySelectorAll('.opt')];const right=opts.find(o=>alt.indexOf(o.textContent.trim())===0)||opts[0];const lv0=t.lv;right.click();await w(1400);return '[5 答對] 照片alt='+alt+' 選項='+opts.map(o=>o.textContent).join('/')+' 升級前='+lv0+' 升級後='+t.lv+' 問答已關='+(!document.querySelector('.df-modal'))})()"
+ },
+ {
+  "do": "shot",
+  "path": "D:/claude測試資料/lun-zoodefense/2026-11-03/defense-03-升級後.png"
+ },
+ {
+  "do": "eval",
+  "expr": "(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));const t=Defense.sim.towers[1];tapAt(t.x,t.y);await w(500);const m=document.querySelector('.df-modal');if(!m)return '[6 答錯] 沒有跳出問答';const alt=(m.querySelector('img.photo')||{}).alt||'';const opts=[...m.querySelectorAll('.opt')];const bad=opts.find(o=>alt.indexOf(o.textContent.trim())!==0);const lv0=t.lv;bad.click();await w(500);const fb=m.querySelector('#fb').textContent;m.querySelector('#nx button').click();await w(300);return '[6 答錯] 升級前='+lv0+' 升級後='+t.lv+' 冷卻='+Math.round(t.askCd)+'秒 回饋='+fb+' 問答已關='+(!document.querySelector('.df-modal'))})()"
+ },
+ {
+  "do": "eval",
+  "expr": "(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));Defense.view.resetStats();Defense.stress(200);await w(5000);const st=Defense.view.stats();return '[7 壓力] 場上敵人='+Defense.sim.enemies.length+' 粒子='+st.parts+' 平均幀率='+st.fps.toFixed(1)+' fps（headless，非實機）'})()"
+ },
+ {
+  "do": "shot",
+  "path": "D:/claude測試資料/lun-zoodefense/2026-11-03/defense-04-壓力.png"
+ },
+ {
+  "do": "errors"
+ },
+ {
+  "do": "assert_no_errors"
+ }
+]

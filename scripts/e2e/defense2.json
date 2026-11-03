@@ -1,0 +1,66 @@
+[
+ {
+  "do": "goto",
+  "url": "http://127.0.0.1:8813/"
+ },
+ {
+  "do": "eval",
+  "expr": "(async()=>{localStorage.clear();localStorage.setItem('zoo-grade','mid');return '已清空儲存空間'})()"
+ },
+ {
+  "do": "resize",
+  "width": 1280,
+  "height": 900
+ },
+ {
+  "do": "goto",
+  "url": "http://127.0.0.1:8813/robots.txt"
+ },
+ {
+  "do": "goto",
+  "url": "http://127.0.0.1:8813/#m=1"
+ },
+ {
+  "do": "eval",
+  "expr": "(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));for(let i=0;i<150&&!(window.Defense&&document.querySelector('.df-canvas'));i++)await w(100);await w(500);const d=Defense,s=d.sim;s.L.slotsAt.forEach((p,i)=>{d.S.placeTower(s,i,'monkey')});s.gold=9999;s.towers.forEach(t=>{d.S.upgrade(s,t);d.S.upgrade(s,t)});for(let i=0;i<20000&&!s.over;i++){d.S.step(s,0.05);s.towers.forEach(t=>{t.cd=Math.min(t.cd,0)})}await w(2500);const m=document.querySelector('.df-modal');return '[1 打完第1關] 贏='+s.won+' 愛心='+s.hearts+' 結果畫面='+(m?m.textContent.replace(/\\s+/g,' ').slice(0,60):'沒有')+' 星數存檔='+JSON.stringify(Progress.get().stars)})()"
+ },
+ {
+  "do": "shot",
+  "path": "D:/claude測試資料/lun-zoodefense/2026-11-03/defense-05-結果.png"
+ },
+ {
+  "do": "eval",
+  "expr": "(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));document.querySelector('#r-menu').click();await w(400);const b=[...document.querySelectorAll('.df-lv')];return '[2 回選關] 鎖住='+b.filter(x=>x.disabled).length+' 第1關='+b[0].textContent+' 第4關鎖='+b[3].disabled+' 總星='+document.querySelector('.df-sum').textContent})()"
+ },
+ {
+  "do": "resize",
+  "width": 390,
+  "height": 844
+ },
+ {
+  "do": "goto",
+  "url": "http://127.0.0.1:8813/robots.txt"
+ },
+ {
+  "do": "goto",
+  "url": "http://127.0.0.1:8813/#m=5"
+ },
+ {
+  "do": "eval",
+  "expr": "(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));for(let i=0;i<150&&!(window.Defense&&document.querySelector('.df-canvas'));i++)await w(100);await w(600);const c=document.querySelector('.df-canvas').getBoundingClientRect();const h=document.querySelector('.df-hud').getBoundingClientRect();return '[4 手機390] 畫布='+Math.round(c.width)+'x'+Math.round(c.height)+' HUD高='+Math.round(h.height)+' 橫向溢出='+(document.documentElement.scrollWidth>document.documentElement.clientWidth)+' scrollW='+document.documentElement.scrollWidth})()"
+ },
+ {
+  "do": "eval",
+  "expr": "(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));const s=Defense.sim;window.tapAt=(x,y)=>{const c=document.querySelector('.df-canvas');const r=c.getBoundingClientRect();const o={bubbles:true,clientX:r.left+x/960*r.width,clientY:r.top+y/540*r.height,pointerId:1,pointerType:'touch',isPrimary:true,button:0,buttons:1};c.dispatchEvent(new PointerEvent('pointerdown',o));c.dispatchEvent(new PointerEvent('pointerup',Object.assign({},o,{buttons:0})))};s.gold=400;const p=s.L.slotsAt[0];tapAt(p[0],p[1]);await w(500);const sh=document.querySelector('.df-sheet');const n=sh?sh.querySelectorAll('.df-pick').length:0;const r=sh?sh.querySelector('.df-sheet-in').getBoundingClientRect():null;return '[5 手機放塔選單] 選單='+(sh?'有':'無')+' 可選='+n+(r?' 寬='+Math.round(r.width)+' 高='+Math.round(r.height):'')+' 橫向溢出='+(document.documentElement.scrollWidth>document.documentElement.clientWidth)})()"
+ },
+ {
+  "do": "shot",
+  "path": "D:/claude測試資料/lun-zoodefense/2026-11-03/defense-06-手機選單.png"
+ },
+ {
+  "do": "errors"
+ },
+ {
+  "do": "assert_no_errors"
+ }
+]

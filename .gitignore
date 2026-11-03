@@ -1,0 +1,7 @@
+node_modules/
+.wrangler/
+.dev.vars
+.prod.secrets
+進度.md
+學習筆記.md
+__pycache__/

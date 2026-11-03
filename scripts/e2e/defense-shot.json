@@ -1,0 +1,10 @@
+[
+{"do": "goto", "url": "http://127.0.0.1:8812/"},
+{"do": "eval", "expr": "(async()=>{localStorage.clear();localStorage.setItem('zoo-grade','mid');return 'ok'})()"},
+{"do": "resize", "width": 1100, "height": 900},
+{"do": "goto", "url": "http://127.0.0.1:8812/play"},
+{"do": "goto", "url": "http://127.0.0.1:8812/defense#m=3"},
+{"do": "eval", "expr": "(async()=>{const w=ms=>new Promise(r=>setTimeout(r,ms));for(let i=0;i<150&&!(window.Defense&&document.querySelector('.df-canvas'));i++)await w(100);await w(500);const d=Defense,s=d.sim;s.gold=900;const types=['monkey','giraffe','elephant'];[0,2,3,5,6,8].forEach((i,k)=>{d.S.placeTower(s,i,types[k%3])});s.towers.forEach((t,k)=>{if(k%2===0)d.S.upgrade(s,t);if(k===0)d.S.upgrade(s,t)});s.gold=75;d.S.startWave(s,false);await w(9000);return '塔='+s.towers.length+' 敵人='+s.enemies.length+' 波='+s.waveNo})()"},
+{"do": "shot", "path": "D:/claude測試資料/lun-zoo/2026-11-03/defense-help.png", "selector": ".df-stage"},
+{"do": "assert_no_errors"}
+]
