@@ -4,7 +4,7 @@
    負責：小工具、年級、自製對話框、動物資料載入（data/animals.json）、頁首與頁尾、Zoo.boot。 */
 (function () {
   "use strict";
-  const V = "4"; // 資料與縮圖的快取版號，換資料時升版
+  const V = "6"; // 資料與縮圖的快取版號，換資料時升版
 
   const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   function shuffle(arr) {
@@ -124,7 +124,7 @@
   foot.className = "foot";
   foot.innerHTML =
     '<div class="foot-brand"><img src="/img/hunglun-logo.webp" alt="鴻綸科技" width="282" height="56"></div>' +
-    '<p class="foot-copy">動物名字與照片來自臺北市立動物園開放資料，依政府資料開放授權條款使用，由鴻綸科技整理製作。遊戲程式與介面設計 © 2026 鴻綸科技。</p>';
+    '<p class="foot-copy">動物名字與照片來自臺北市立動物園開放資料，依政府資料開放授權條款使用，由鴻綸科技整理製作。角色圖為示意圖。遊戲程式與介面設計 © 2026 鴻綸科技。</p>';
   wrap.appendChild(foot);
 
   // Zoo.boot(fn)：載入動物資料後呼叫 fn(animals)，處理載入中與失敗畫面

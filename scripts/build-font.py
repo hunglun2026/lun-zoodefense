@@ -1,28 +1,32 @@
-"""把自架字型裁到「本站實際用到的字」。來源是目前 public/fonts 裡的字型包（從 lun-zoo 複製來的 Noto Sans TC 子集，SIL OFL 1.1）。
-做法：每一包只留本站用到的字，空的包整個拿掉，檔名帶內容雜湊，重寫 style.css 的 FONTS:BEGIN～END 與 index.html 的 preload。
-用字來源：html／js／css 全部文字（不含 pixi）＋ data/animals.json ＋ zhuyin.json ＋ 注音符號。
-用法：python scripts/build-font.py [--check]    需要：pip install fonttools brotli
-重跑後要升 ?v=N（index.html 的 style.css 連結）。"""
+"""把自架字型裁到「本站實際用到的字」，輸出一包 public/fonts/zoo-sans-<雜湊>.woff2（Noto Sans TC 可變字型，SIL OFL 1.1）。
+來源：tools/web-design 的字型快取（webdesign.fonts，第一次會自動下載原始字型）。所以文字隨時可以加，重跑就補字，不會卡缺字。
+用字來源：html／js／css／json 全部文字（不含 pixi）＋ 注音符號。會同時改 style.css 的 FONTS:BEGIN～END 與 index.html 的 preload。
+用法：python scripts/build-font.py [--check]    --check 只看有沒有缺字（缺字時退出碼 1）
+重跑後要升 ?v=N（index.html 的 style.css 連結）。需要：pip install fonttools brotli"""
 import hashlib
 import re
 import sys
 from pathlib import Path
 
-from fontTools import subset
 from fontTools.ttLib import TTFont
 
 ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT.parent.parent / "tools" / "web-design"))
+from webdesign import fonts  # noqa: E402
+
 PUB = ROOT / "public"
 FONTS = PUB / "fonts"
 CSS = PUB / "css" / "style.css"
 EMOJI = re.compile("[←-⯿〰〽㊗㊙\U0001f000-\U0001faff️‍⃣]")
+FONT_BLOCK = re.compile(r"(FONTS:BEGIN.*?\*/)(.*?)(/\*\s*FONTS:END)", re.S)
+PRELOAD = re.compile(r'(<link rel="preload" as="font" type="font/woff2" href=")[^"]+(")')
 
 
 def needed() -> set:
     t = ""
     for ext in ("html", "js", "css", "json"):
         for p in PUB.rglob(f"*.{ext}"):
-            if p.name not in ("pixi.min.js",):
+            if p.name != "pixi.min.js":
                 t += p.read_text(encoding="utf-8")
     t += "".join(chr(c) for c in range(0x20, 0x7F)) + "".join(chr(c) for c in range(0x3105, 0x312A)) + "ˊˇˋ˙"
     return {c for c in t if ord(c) >= 0x20 and not EMOJI.match(c)}
@@ -39,48 +43,29 @@ def ranges(cps) -> str:
 
 
 def main() -> int:
-    need = {ord(c) for c in needed()}
-    packs = sorted(FONTS.glob("zoo-sans-*.woff2"))
-    have = {}
-    for p in packs:
-        have[p] = set(TTFont(p).getBestCmap())
+    need = needed()
+    cmap = set(TTFont(fonts._source("sans")).getBestCmap())
+    skipped = sorted(c for c in need if ord(c) not in cmap)  # 原始字型本身就沒有的字（會退回系統字型）
+    use = sorted(c for c in need if ord(c) in cmap)
     if "--check" in sys.argv:
-        allc = set().union(*have.values())
-        miss = sorted(need - allc)
-        print(f"字型 {len(packs)} 包；本站用 {len(need)} 字；缺 {len(miss)} 字 {''.join(map(chr, miss))}")
+        have = set()
+        for f in FONTS.glob("zoo-sans-*.woff2"):
+            have |= set(TTFont(f).getBestCmap())
+        miss = sorted(c for c in use if ord(c) not in have)
+        print(f"字型 {len(list(FONTS.glob('zoo-sans-*.woff2')))} 包；本站用 {len(need)} 字；缺 {len(miss)} 字 {''.join(miss)}；原始字型也沒有 {len(skipped)} 字 {''.join(skipped)}")
         return 1 if miss else 0
+    data = fonts.subset_woff2("sans", "".join(use))
+    name = f"zoo-sans-{hashlib.sha1(data).hexdigest()[:8]}.woff2"
+    for old in FONTS.glob("zoo-sans-*.woff2"):
+        old.unlink()
+    (FONTS / name).write_bytes(data)
     css = CSS.read_text(encoding="utf-8")
-    m = re.search(r"(FONTS:BEGIN.*?\*/)(.*?)(/\*\s*FONTS:END)", css, re.S)
-    head = re.search(r"@font-face\{([^}]*)\}", m.group(2)).group(1)
-    family = re.search(r'font-family:("[^"]+")', head).group(1)
-    weight = re.search(r"font-weight:([^;]+);", head).group(1)
-    outs, used = [], set()
-    for i, p in enumerate(packs):
-        keep = (have[p] & need) - used
-        used |= keep
-        if not keep:
-            continue
-        font = TTFont(p)
-        opt = subset.Options(); opt.flavor = "woff2"; opt.layout_features = ["*"]; opt.notdef_outline = True
-        sub = subset.Subsetter(opt); sub.populate(unicodes=sorted(keep)); sub.subset(font)
-        tmp = FONTS / f"_tmp{i}.woff2"; font.flavor = "woff2"; font.save(tmp)
-        h = hashlib.sha1(tmp.read_bytes()).hexdigest()[:8]
-        outs.append((tmp, h, sorted(keep)))
-    for p in packs:
-        p.unlink()
-    faces, first = [], None
-    for n, (tmp, h, keep) in enumerate(outs):
-        name = f"zoo-sans-{n}-{h}.woff2"
-        tmp.rename(FONTS / name)
-        first = first or name
-        faces.append(f'@font-face{{font-family:{family};src:url("/fonts/{name}") format("woff2");font-weight:{weight};font-display:swap;unicode-range:{ranges(keep)}}}')
-    css = css[:m.start(2)] + "\n" + "\n".join(faces) + "\n" + css[m.end(2):]
-    CSS.write_text(css, encoding="utf-8", newline="\n")
+    m = FONT_BLOCK.search(css)
+    face = f'@font-face{{font-family:"ZooSans";src:url("/fonts/{name}") format("woff2");font-weight:400 800;font-display:swap;unicode-range:{ranges(ord(c) for c in use)}}}'
+    CSS.write_text(css[:m.start(2)] + "\n" + face + "\n" + css[m.end(2):], encoding="utf-8", newline="\n")
     idx = PUB / "index.html"
-    html = re.sub(r'(<link rel="preload" as="font" type="font/woff2" href=")[^"]+(")', rf"\g<1>/fonts/{first}\g<2>", idx.read_text(encoding="utf-8"))
-    idx.write_text(html, encoding="utf-8", newline="\n")
-    total = sum((FONTS / f"zoo-sans-{n}-{h}.woff2").stat().st_size for n, (_, h, _) in enumerate(outs))
-    print(f"{len(outs)} 包，共 {total // 1024} KB，用 {len(used)} 字；首包 {first}")
+    idx.write_text(PRELOAD.sub(lambda mm: mm.group(1) + f"/fonts/{name}" + mm.group(2), idx.read_text(encoding="utf-8")), encoding="utf-8", newline="\n")
+    print(f"1 包 {len(data) // 1024} KB，用 {len(use)} 字；{name}；原始字型沒有的字：{''.join(skipped) or '無'}")
     return 0
 
 

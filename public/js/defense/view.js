@@ -29,6 +29,17 @@
     r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(1, "rgba(255,255,255,0)");
     g.fillStyle = r; g.fillRect(0, 0, 32, 32);
   }));
+  // 手繪角色圖（img/sprites，256px webp，背景已去掉）；載入失敗回 null，畫面退回 emoji
+  const SPRITE_V = "1";
+  function loadSprite(name) {
+    return new Promise((res) => {
+      const img = new Image();
+      img.onload = () => res(canvasTex(256, 256, (g) => g.drawImage(img, 0, 0, 256, 256)));
+      img.onerror = () => res(null);
+      img.src = "/img/sprites/" + name + ".webp?v=" + SPRITE_V;
+    });
+  }
+
   async function create(host, sim, hooks) {
     const L = sim.L;
     const app = new PIXI.Application();
@@ -71,6 +82,15 @@
       plus.anchor.set(0.5); g.addChild(plus);
       layers.slots.addChild(g); slotG[i] = g;
     });
+
+    // ---- 角色貼圖：這一關會用到的塔與敵人 ----
+    const tex = {};
+    const need = new Set(D.unlocked(sim.no).map((k) => "tower_" + k));
+    const kinds = new Set(L.kinds);
+    (L.boss || []).forEach((b) => kinds.add(b.type));
+    if (kinds.has("water")) kinds.add("mini");
+    kinds.forEach((k) => need.add("enemy_" + k));
+    await Promise.all([...need].map(async (n) => { tex[n] = await loadSprite(n); }));
 
     // ---- 物件池 ----
     const pool = {};
@@ -119,7 +139,9 @@
     function addEnemy(e) {
       const v = take("enemy", makeEnemy);
       const sz = e.def.size;
-      v.body.texture = emojiTex(e.def.emoji); v.body.width = v.body.height = sz * 1.15; v.base = v.body.scale.x;
+      const st = tex["enemy_" + e.type];
+      v.body.texture = st || emojiTex(e.def.emoji); v.body.anchor.set(0.5, st ? 0.86 : 0.78);
+      v.body.width = v.body.height = sz * (st ? 1.7 : 1.15); v.base = v.body.scale.x; v.flip = 1;
       v.shadow.scale.set(sz / 40); v.c.visible = true; v.c.alpha = 1; v.c.scale.set(0.3); v.born = 0; v.dying = 0; v.phase = Math.random() * 6;
       v.body.tint = 0xffffff; v.sz = sz; v.e = e;
       eView.set(e.id, v);
@@ -160,11 +182,13 @@
       const c = new PIXI.Container(); c.position.set(t.x, t.y);
       const rangeG = new PIXI.Graphics(); rangeG.visible = false;
       const base = new PIXI.Graphics(); drawBase(base, t);
-      const spr = new PIXI.Sprite(emojiTex(t.def.emoji)); spr.anchor.set(0.5, 0.82); spr.position.set(0, 12); spr.width = spr.height = 64;
+      const st = tex["tower_" + t.type];
+      const spr = new PIXI.Sprite(st || emojiTex(t.def.emoji)); spr.anchor.set(0.5, st ? 0.92 : 0.82); spr.baseY = st ? 18 : 12; spr.position.set(0, spr.baseY);
+      spr.width = spr.height = st ? 84 : 64;
       spr.baseS = spr.scale.x;
       const ask = new PIXI.Text({ text: "?", style: { fontSize: 22, fill: 0xffffff, fontWeight: "900" } }); ask.anchor.set(0.5);
-      const bub = new PIXI.Container(); const bg2 = new PIXI.Graphics(); bg2.circle(0, 0, 15).fill(0xe8873a).stroke({ width: 3, color: 0xffffff }); bub.addChild(bg2, ask); bub.position.set(30, -34);
-      const mute = new PIXI.Text({ text: "🔇", style: { fontSize: 26 } }); mute.anchor.set(0.5); mute.position.set(0, -40); mute.visible = false;
+      const bub = new PIXI.Container(); const bg2 = new PIXI.Graphics(); bg2.circle(0, 0, 15).fill(0xe8873a).stroke({ width: 3, color: 0xffffff }); bub.addChild(bg2, ask); bub.position.set(36, -50);
+      const mute = new PIXI.Text({ text: "🔇", style: { fontSize: 26 } }); mute.anchor.set(0.5); mute.position.set(0, -58); mute.visible = false;
       c.addChild(rangeG, base, spr, bub, mute);
       c.eventMode = "static"; c.cursor = "pointer"; c.hitArea = new PIXI.Circle(0, 0, 44);
       c.on("pointertap", () => hooks.onTower(t));
@@ -289,7 +313,8 @@
         v.body.y = -bob * (e.def.boss ? 4 : 7);
         v.body.rotation = Math.sin(v.phase) * (e.def.boss ? 0.06 : 0.14);
         const k = v.base * (v.pop > 0 ? 1 + v.pop * 0.18 : 1);
-        v.body.scale.set(k * (1 + sq), k * (1 - sq));
+        const cx = Math.cos(e.ang); if (cx < -0.25) v.flip = -1; else if (cx > 0.25) v.flip = 1; // 往左走就翻面
+        v.body.scale.set(k * (1 + sq) * v.flip, k * (1 - sq));
         if (v.pop > 0) v.pop = Math.max(0, v.pop - dtRaw * 8);
         v.hitT = Math.max(0, (v.hitT || 0) - dtRaw);
         v.body.tint = v.hitT > 0 ? 0xff7a6a : e.slowT > 0 ? 0x9fd8ff : e.stunT > 0 ? 0xffe27a : 0xffffff;
@@ -308,7 +333,7 @@
         const grow = 1 + 0.12 * (t.lv - 1), lunge = 1 + kick * 0.18;
         v.spr.scale.set(v.spr.baseS * grow * v.face * lunge, v.spr.baseS * grow * (1 - kick * 0.1));
         v.spr.x = kick * 5 * v.face;
-        v.spr.y = 12 - Math.abs(Math.sin(time * 3 + t.id)) * 3;
+        v.spr.y = v.spr.baseY - Math.abs(Math.sin(time * 3 + t.id)) * 3;
         v.spr.rotation = (kick ? Math.sin(kick * 18) * 0.14 : Math.sin(time * 2 + t.id) * 0.03);
         const canAsk = t.lv < G.DefSim.MAX_LV && t.askCd <= 0;
         v.bub.visible = canAsk && !(t.stunT > 0);
