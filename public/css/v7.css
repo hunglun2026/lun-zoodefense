@@ -105,3 +105,7 @@ main h1{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(5
 .df-q p:has(#r-again){display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
 .df-q #r-again,.df-q #r-next{flex:1 1 40%}
 .df-q #r-menu{flex:1 1 100%}
+
+/* 答題視窗：視窗高度不夠時照片縮小，答錯後的說明與「知道了」才不會被擠到底緣 */
+@media (max-height:780px){.df-q .photo,.df-q .ph{max-height:24vh}.df-q{padding-block:14px}}
+@media (max-height:640px){.df-q .photo,.df-q .ph{max-height:20vh}}
