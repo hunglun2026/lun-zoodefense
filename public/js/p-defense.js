@@ -3,6 +3,7 @@
    網址 #m=3 直接開第 3 關（老師班級連結用）。 */
 Zoo.boot(function (animals) {
   const { esc, el, shuffle } = Zoo;
+  const I = Zoo.icon; // 自畫 SVG 圖示（js/icons.js）
   const D = DefLevels, S = DefSim;
   const root = document.getElementById("root");
   const pool = animals.filter((a) => a.thumb && !a.name_suspect);
@@ -18,16 +19,25 @@ Zoo.boot(function (animals) {
   function menu() {
     destroyGame();
     const total = D.LEVELS.reduce((n, L) => n + stars(L.no), 0);
+    // 探險小徑：10 個關卡沿一條蜿蜒的路排開（座標在 1000×400 的虛擬圖上，用百分比定位）
+    const n = D.LEVELS.length, pts = D.LEVELS.map((L, i) => [70 + i * (860 / (n - 1)), 196 + (i % 2 ? 84 : -84) + Math.sin(i * 1.3) * 14]); // 高低交錯，相鄰關卡的名字不會疊在一起
+    let d = "M" + pts[0].join(",");
+    for (let i = 0; i < n - 1; i++) {
+      const p0 = pts[Math.max(0, i - 1)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.min(n - 1, i + 2)];
+      d += " C" + [p1[0] + (p2[0] - p0[0]) / 6, p1[1] + (p2[1] - p0[1]) / 6, p2[0] - (p3[0] - p1[0]) / 6, p2[1] - (p3[1] - p1[1]) / 6, p2[0], p2[1]].map((v) => v.toFixed(1)).join(",");
+    }
     const box = el(
-      '<div class="panel"><p class="lead zy" style="margin-top:0">動物是砲塔，把亂丟的垃圾和噪音擋在外面，守住動物的家！認出動物就能讓牠升級。</p>' +
-      '<p class="zy df-sum">⭐ ' + total + " / " + D.LEVELS.length * 3 + '</p><div class="df-levels"></div></div>');
-    const grid = box.querySelector(".df-levels");
-    D.LEVELS.forEach((L) => {
+      '<div class="exp-wrap"><div class="exp-head"><p class="exp-lead zy">動物是砲塔，把亂丟的垃圾和噪音擋在外面，守住動物的家。認出動物，就能讓牠升級。</p>' +
+      '<p class="exp-sum zy">' + I("star") + "<b>" + total + "</b> / " + n * 3 + '</p></div><div class="exp-scroll"><div class="exp">' +
+      '<svg class="exp-line" viewBox="0 0 1000 400" preserveAspectRatio="none" aria-hidden="true"><path d="' + d + '" class="xp-shadow"/><path d="' + d + '" class="xp-path"/></svg></div></div><p class="exp-hint zy">左右滑動，看全部關卡</p></div>');
+    const trail = box.querySelector(".exp");
+    D.LEVELS.forEach((L, i) => {
       const open = isOpen(L.no), s = stars(L.no);
-      const b = el('<button class="df-lv' + (open ? "" : " locked") + '"' + (open ? "" : " disabled") + '><b>' + L.no + '</b><span class="zy">' + esc(L.name) + "</span><i>" +
-        (open ? "⭐".repeat(s) + "☆".repeat(3 - s) : "🔒") + "</i>" + (L.boss ? '<em class="zy">魔王</em>' : "") + "</button>");
+      const starsHtml = open ? [0, 1, 2].map((k) => I("star", k < s ? "on" : "off")).join("") : I("lock");
+      const b = el('<button class="xn' + (open ? "" : " locked") + (L.boss ? " boss" : "") + (s ? " done" : "") + '"' + (open ? "" : " disabled") + ' style="left:' + (pts[i][0] / 10).toFixed(2) + "%;top:" + (pts[i][1] / 4).toFixed(2) + '%">' +
+        '<span class="xn-dot">' + (L.boss ? I("crown") : "") + "<b>" + L.no + '</b></span><span class="xn-name zy">' + esc(L.name) + '</span><span class="xn-stars">' + starsHtml + "</span></button>");
       b.onclick = () => play(L.no);
-      grid.appendChild(b);
+      trail.appendChild(b);
     });
     root.replaceChildren(box);
   }
@@ -45,9 +55,9 @@ Zoo.boot(function (animals) {
     const L = sim.L;
     const wrap = el(
       '<div class="df-wrap"><div class="df-hud">' +
-      '<span class="chip" id="h-heart">❤️ ' + sim.hearts + '</span><span class="chip" id="h-gold">🪙 ' + sim.gold + '</span><span class="chip zy" id="h-wave">第 0 / ' + L.waves + ' 波</span>' +
-      '<button class="btn" id="b-next">▶ 開始</button><button class="btn" id="b-spd" aria-label="加速">⏩ ×1</button><button class="btn" id="b-pause" aria-label="暫停">⏸</button><button class="btn" id="b-exit">離開</button></div>' +
-      '<p class="df-rotate zy">📱 把手機橫過來玩，畫面更大，也更好點。</p><div class="df-stage" id="stage"><div class="df-banner" id="banner" aria-live="polite"></div><div class="df-toast" id="toast" role="status"></div></div>' +
+      '<span class="chip chip-heart" title="愛心">' + I("heart") + '<b id="h-heart">' + sim.hearts + '</b></span><span class="chip chip-gold" title="金幣">' + I("coin") + '<b id="h-gold">' + sim.gold + '</b></span><span class="chip chip-wave zy">' + I("wave") + '<b id="h-wave">第 0 / ' + L.waves + ' 波</b></span>' +
+      '<button class="btn go" id="b-next">' + I("play") + '<span id="b-next-t">開始</span></button><button class="btn" id="b-spd" aria-label="加速">' + I("ff") + '<span>×1</span></button><button class="btn" id="b-pause" aria-label="暫停">' + I("pause") + '</button><button class="btn" id="b-exit">' + I("exit") + '<span>離開</span></button></div>' +
+      '<p class="df-rotate zy">把手機橫過來玩，畫面更大，也更好點。</p><div class="df-stage" id="stage"><div class="df-banner" id="banner" aria-live="polite"></div><div class="df-toast" id="toast" role="status"></div></div>' +
       '<p class="df-tip zy" id="tip"></p></div>');
     root.replaceChildren(wrap);
     const stage = wrap.querySelector("#stage");
@@ -66,13 +76,13 @@ Zoo.boot(function (animals) {
       onSlot: (i) => { if (!sim.over && !modal) picker(i); },
       onTower: (t) => { if (!sim.over && !modal) tapTower(t); },
       onFrame: (s) => {
-        set("h-heart", "❤️ " + s.hearts);
-        set("h-gold", "🪙 " + s.gold);
+        set("h-heart", s.hearts);
+        set("h-gold", s.gold);
         set("h-wave", "第 " + s.waveNo + " / " + s.L.waves + " 波");
         const canNext = !s.spawning && s.waveNo < s.L.waves;
         const nb = $("b-next");
         nb.hidden = !canNext;
-        if (canNext) set("b-next", s.waveNo === 0 ? "▶ 開始" : "▶ 提早開始 +" + Math.max(0, Math.round(s.nextIn)) + "🪙");
+        if (canNext) set("b-next-t", s.waveNo === 0 ? "開始" : "提早開始 +" + Math.max(0, Math.round(s.nextIn)) + " 金幣");
       },
       onEvent: (e) => {
         if (e.k === "wave") banner(e.boss ? "魔王來了！第 " + e.n + " 波" : "第 " + e.n + " 波", e.boss ? "boss" : "");
@@ -85,8 +95,8 @@ Zoo.boot(function (animals) {
     window.Defense = { sim, view, S, stress: (n) => { for (let i = 0; i < n; i++) S.spawn(sim, "trash", i % L.paths.length, 40, -i * 4); } };
 
     $("b-next").onclick = () => S.startWave(sim, sim.waveNo > 0);
-    $("b-spd").onclick = () => { speed = speed === 1 ? 2 : 1; $("b-spd").textContent = "⏩ ×" + speed; };
-    $("b-pause").onclick = () => { userPaused = !userPaused; view.setPaused(userPaused); $("b-pause").textContent = userPaused ? "▶" : "⏸"; };
+    $("b-spd").onclick = () => { speed = speed === 1 ? 2 : 1; $("b-spd").lastChild.textContent = "×" + speed; };
+    $("b-pause").onclick = () => { userPaused = !userPaused; view.setPaused(userPaused); $("b-pause").innerHTML = I(userPaused ? "play" : "pause"); };
     $("b-exit").onclick = async () => {
       if (sim.over) return menu();
       view.setPaused(true);
@@ -100,7 +110,7 @@ Zoo.boot(function (animals) {
       closePicker();
       if (sim.gold < D.TOWER_COST) { Fx.wrong(); return toast("金幣不夠，先打敗幾隻敵人再來放動物"); }
       const types = D.unlocked(sim.no);
-      const sheet = el('<div class="df-layer df-sheet" role="dialog" aria-label="選一隻動物來守衛"><div class="df-sheet-in"><p class="zy"><b>選一隻動物來守衛</b>　<small>每隻 🪙' + D.TOWER_COST + "</small></p><div class=\"df-picks\"></div>" +
+      const sheet = el('<div class="df-layer df-sheet" role="dialog" aria-label="選一隻動物來守衛"><div class="df-sheet-in"><p class="zy"><b>選一隻動物來守衛</b>　<small>每隻 ' + I("coin") + D.TOWER_COST + "</small></p><div class=\"df-picks\"></div>" +
         '<button class="btn" id="pk-x">取消</button></div></div>');
       const list = sheet.querySelector(".df-picks");
       types.forEach((k) => {
@@ -172,8 +182,8 @@ Zoo.boot(function (animals) {
       const next = no < D.LEVELS.length && won;
       const r = el(
         '<div class="df-layer df-modal"><div class="stage df-q"><h2 class="zy">' + (won ? (no === D.LEVELS.length ? "全部守住了！你是動物園守護者！" : "守住了！") : "動物的家被攻進來了") + "</h2>" +
-        (won ? '<div class="stars" aria-label="' + st + ' 顆星">' + "⭐".repeat(st) + "☆".repeat(3 - st) + "</div>" : '<p class="zy">別灰心，把動物升級、多放幾隻再試一次。</p>') +
-        '<p><button class="btn primary big zy" id="r-again">再玩一次</button> ' + (next ? '<button class="btn primary big zy" id="r-next">下一關 ➜</button> ' : "") +
+        (won ? '<div class="stars" aria-label="' + st + ' 顆星">' + I("star", "on").repeat(st) + I("star", "off").repeat(3 - st) + "</div>" : '<p class="zy">別灰心，把動物升級、多放幾隻再試一次。</p>') +
+        '<p><button class="btn primary big zy" id="r-again">再玩一次</button> ' + (next ? '<button class="btn primary big zy" id="r-next">下一關</button> ' : "") +
         '<button class="btn big zy" id="r-menu">選關</button></p></div></div>');
       r.querySelector("#r-again").onclick = () => { r.remove(); play(no); };
       const n = r.querySelector("#r-next"); if (n) n.onclick = () => { r.remove(); play(no + 1); };

@@ -24,6 +24,10 @@
       g.fillText(ch, w / 2, h / 2 + 6);
     }));
   }
+  const coinTex = () => emojiCache.__coin || (emojiCache.__coin = canvasTex(64, 64, (g) => { // 自畫金幣，取代 emoji
+    g.fillStyle = "#f2b632"; g.strokeStyle = "#a8721a"; g.lineWidth = 5; g.beginPath(); g.arc(32, 32, 27, 0, 7); g.fill(); g.stroke();
+    g.strokeStyle = "#c98d1e"; g.lineWidth = 5; g.beginPath(); g.arc(32, 32, 16, 0, 7); g.stroke();
+  }));
   const dotTex = () => emojiCache.__dot || (emojiCache.__dot = canvasTex(32, 32, (g) => {
     const r = g.createRadialGradient(16, 16, 0, 16, 16, 16);
     r.addColorStop(0, "rgba(255,255,255,1)"); r.addColorStop(1, "rgba(255,255,255,0)");
@@ -54,32 +58,16 @@
     layers.text.eventMode = "none"; layers.shots.eventMode = "none"; layers.fx.eventMode = "none"; layers.enemies.eventMode = "none";
 
     // ---- 背景：草地、路、放塔格、動物之家 ----
-    const bg = new PIXI.Graphics();
-    bg.rect(0, 0, D.W, D.H).fill(L.night ? 0x1f3a2c : 0xa7d676);
-    for (let i = 0; i < 60; i++) { // 草地的小色塊，讓畫面不死板（固定種子，每次一樣）
-      const x = (i * 197) % D.W, y = (i * 311) % D.H;
-      bg.circle(x, y, 18 + (i % 5) * 6).fill({ color: L.night ? 0x25452f : 0x98c967, alpha: 0.55 });
-    }
-    L.paths.forEach((p) => {
-      const draw = (w, c) => { bg.moveTo(p.pts[0][0], p.pts[0][1]); p.pts.slice(1).forEach((q) => bg.lineTo(q[0], q[1])); bg.stroke({ width: w, color: c, cap: "round", join: "round" }); };
-      draw(50, L.night ? 0x4a3a2a : 0xb98d54); draw(40, L.night ? 0x66523a : 0xe3c58d);
-    });
-    layers.bg.addChild(bg);
-    const end = L.paths[0].pts[L.paths[0].pts.length - 1];
-    const home = new PIXI.Sprite(emojiTex("🏡")); home.anchor.set(0.5); home.position.set(Math.min(end[0], D.W - 52) + 8, end[1] - 6); home.scale.set(0.8);
-    layers.bg.addChild(home);
-    if (L.night) { const v = new PIXI.Graphics(); v.rect(0, 0, D.W, D.H).fill({ color: 0x0a1030, alpha: 0.28 }); layers.fx.addChild(v); }
+    G.DefScene.drawBackground(layers.bg, L, D); // 場景繪製在 scene.js
+    if (L.night) { const v = new PIXI.Graphics(); v.rect(0, 0, D.W, D.H).fill({ color: 0x0a1030, alpha: 0.14 }); layers.fx.addChild(v); }
 
     // ---- 放塔格 ----
     const slotG = [];
     L.slotsAt.forEach((p, i) => {
-      const g = new PIXI.Graphics();
-      g.circle(0, 0, 30).fill({ color: 0xffffff, alpha: 0.35 }).stroke({ width: 4, color: 0xffffff, alpha: 0.9 });
+      const g = G.DefScene.makeSlot();
       g.position.set(p[0], p[1]);
       g.eventMode = "static"; g.cursor = "pointer"; g.hitArea = new PIXI.Circle(0, 0, 40);
       g.on("pointertap", () => hooks.onSlot(i));
-      const plus = new PIXI.Text({ text: "+", style: { fontSize: 34, fill: 0xffffff, fontWeight: "900" } });
-      plus.anchor.set(0.5); g.addChild(plus);
       layers.slots.addChild(g); slotG[i] = g;
     });
 
@@ -188,7 +176,7 @@
       spr.baseS = spr.scale.x;
       const ask = new PIXI.Text({ text: "?", style: { fontSize: 22, fill: 0xffffff, fontWeight: "900" } }); ask.anchor.set(0.5);
       const bub = new PIXI.Container(); const bg2 = new PIXI.Graphics(); bg2.circle(0, 0, 15).fill(0xe8873a).stroke({ width: 3, color: 0xffffff }); bub.addChild(bg2, ask); bub.position.set(36, -50);
-      const mute = new PIXI.Text({ text: "🔇", style: { fontSize: 26 } }); mute.anchor.set(0.5); mute.position.set(0, -58); mute.visible = false;
+      const mute = new PIXI.Text({ text: "靜音", style: { fontSize: 18, fill: 0xffffff, fontWeight: "800", stroke: { color: 0x3a2a17, width: 4 } } }); mute.anchor.set(0.5); mute.position.set(0, -58); mute.visible = false;
       c.addChild(rangeG, base, spr, bub, mute);
       c.eventMode = "static"; c.cursor = "pointer"; c.hitArea = new PIXI.Circle(0, 0, 44);
       c.on("pointertap", () => hooks.onTower(t));
@@ -226,7 +214,7 @@
     const coins = [];
     function coinFly(x, y) {
       if (coins.length > 12) return;
-      const s = take("coin", () => { const q = new PIXI.Sprite(emojiTex("🪙")); q.anchor.set(0.5); q.width = q.height = 26; layers.text.addChild(q); return q; });
+      const s = take("coin", () => { const q = new PIXI.Sprite(coinTex()); q.anchor.set(0.5); q.width = q.height = 26; layers.text.addChild(q); return q; });
       s.visible = true; s.alpha = 1; s.position.set(x, y);
       coins.push({ s, x0: x, y0: y, life: 0, max: 0.7 + Math.random() * 0.2 });
     }
@@ -261,7 +249,7 @@
             const v = eView.get(e.e.id);
             if (v) v.dying = 0.01;
             shake(8, 0.3); ring(e.e.x, e.e.y, 70, 0xe8473a, 0.5);
-            floatText(e.e.x - 30, e.e.y - 20, "-" + e.e.def.dmg + " ❤", 0xff6a5c, 26);
+            floatText(e.e.x - 30, e.e.y - 20, "-" + e.e.def.dmg + " 愛心", 0xff6a5c, 26);
             break;
           }
           case "upgrade": {

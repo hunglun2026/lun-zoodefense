@@ -1,0 +1,92 @@
+/* 動物園守護戰 v7：手繪繪本風。深森林綠的底、木牌質感的操作列、木框舞台、探險小徑選關。
+   放在 style.css、defense.css 之後載入，只覆蓋外觀，不動版面結構。 */
+:root{
+  --forest:#17382a;--forest-d:#10281e;--paper:#f6ecd2;--paper-d:#b99a62;--wood:#6b4423;--wood-d:#3f2915;
+  --cream:#f4ecd6;--cream-2:#d9d0b4;--coin:#f2b632;--coin-d:#a8721a;
+  --frame:0 0 0 6px var(--wood),0 0 0 9px var(--wood-d),0 18px 30px rgba(0,0,0,.4);
+}
+::selection{background:#f2b632;color:#2a1c0c}
+html{scrollbar-color:#b98d54 var(--forest-d);accent-color:#2f8f5b}
+body{background:linear-gradient(180deg,#1d4636 0,var(--forest) 260px,var(--forest-d) 100%) fixed;color:var(--cream)}
+a{color:#bfe8c9}
+:focus-visible{outline:3px solid var(--coin);outline-offset:3px;border-radius:8px}
+
+header.top{border-bottom:2px solid rgba(255,255,255,.14)}
+header.top .logo{color:var(--cream)}
+header.top nav a{color:var(--cream-2)}
+header.top nav a:hover,header.top nav a[aria-current]{background:rgba(255,255,255,.12);color:#fff}
+.gradebtn{background:var(--paper);color:#3a2a17;border-color:var(--paper-d);box-shadow:0 3px 0 var(--paper-d)}
+footer.foot{border-top:2px solid rgba(255,255,255,.14);color:var(--cream-2)}
+footer.foot a{color:#bfe8c9}
+h1{font-size:1.7rem;color:var(--cream);letter-spacing:.02em;margin-top:.1em}
+main{padding-block:12px 48px}
+
+/* 彈窗與底部選單維持淺色紙張，文字用深色 */
+.df-layer{color:#23332b}
+.df-layer .btn{background:#fff;color:var(--green-d)}
+.df-sheet-in{background:var(--paper)}
+.df-pick{background:#fffaf0;border-color:#e3d3a8}
+
+/* 圖示 */
+.ic{width:22px;height:22px;flex:none;display:inline-block;vertical-align:middle}
+.ic .f{fill:currentColor}.ic .s{stroke:currentColor;stroke-width:2}
+.ic-heart{color:#e5484d}.ic-wave{color:#2f8f5b}.ic-play,.ic-pause,.ic-ff,.ic-exit{color:inherit}
+.ic-coin .f{fill:var(--coin)}.ic-coin .s{stroke:var(--coin-d)}
+.ic-star .f{stroke-width:1.2}
+.ic-star.on .f{fill:var(--coin);stroke:var(--coin-d)}
+.ic-star.off .f{fill:#e0d3ac;stroke:#c9b98c}
+.ic-crown .f{fill:var(--coin);stroke:var(--coin-d);stroke-width:1.5}
+.ic-lock{color:#8a7a58}
+
+/* 操作列：木牌 */
+.df-hud{gap:10px;margin-bottom:14px}
+.df-hud .chip{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:0;background:var(--paper);color:#3a2a17;border:0;border-radius:12px;padding:7px 14px;font-size:1.05rem;box-shadow:0 3px 0 var(--paper-d),0 8px 14px rgba(0,0,0,.28)}
+.df-hud .chip b{font-variant-numeric:tabular-nums}
+.df-hud .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:var(--paper);color:#3a2a17;border:0;border-radius:12px;padding:7px 14px;box-shadow:0 3px 0 var(--paper-d),0 8px 14px rgba(0,0,0,.28);transition:transform .12s ease-out,box-shadow .12s ease-out}
+.df-hud .btn:hover{background:#fff8e4}
+.df-hud .btn:active{transform:translateY(3px);box-shadow:0 0 0 var(--paper-d),0 3px 8px rgba(0,0,0,.28)}
+.df-hud .btn.go{background:#2f8f5b;color:#fff;box-shadow:0 3px 0 #1f6f43,0 8px 14px rgba(0,0,0,.28)}
+.df-hud .btn.go:hover{background:#38a068}
+.df-hud .btn.go:active{box-shadow:0 0 0 #1f6f43,0 3px 8px rgba(0,0,0,.28)}
+
+/* 舞台：木框 */
+.df-stage{border:0;border-radius:20px;box-shadow:var(--frame);background:#93d26b}
+.df-tip{color:var(--cream-2);margin-top:1.4em}
+.df-banner{background:rgba(23,56,42,.9);box-shadow:0 4px 0 rgba(0,0,0,.25)}
+.df-banner.boss{background:rgba(200,52,31,.94)}
+.df-rotate{background:var(--paper);border-color:var(--paper-d);color:#3a2a17}
+
+/* 選關：探險小徑 */
+.exp-wrap{width:100%}
+main h1{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap} /* 頁首已有標題，h1 留給搜尋與讀屏 */
+.exp-head{display:flex;align-items:flex-end;justify-content:space-between;gap:12px 24px;flex-wrap:wrap;margin-bottom:18px}
+.exp-lead{margin:0;max-width:34em;color:var(--cream-2);font-size:1.05rem}
+.exp-sum{margin:0;display:inline-flex;align-items:center;gap:8px;font-weight:800;font-size:1.3rem;color:var(--cream)}
+.exp-sum .ic{color:var(--coin);width:26px;height:26px}.exp-sum .ic .f{fill:var(--coin);stroke:var(--coin-d)}
+.exp-scroll{overflow-x:auto;border-radius:22px;box-shadow:var(--frame);scrollbar-color:#b98d54 #ecdcb2}
+.exp{position:relative;width:100%;min-width:780px;aspect-ratio:1000/400;
+  background:radial-gradient(ellipse at 18% 25%,rgba(255,255,255,.4),transparent 55%),radial-gradient(ellipse at 85% 85%,rgba(150,110,55,.28),transparent 55%),#ecdcb2}
+.exp-line{position:absolute;inset:0;width:100%;height:100%}
+.exp-line path{fill:none;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}
+.xp-shadow{stroke:#a07840;stroke-width:30}
+.xp-path{stroke:#f8ecc6;stroke-width:20}
+.xn{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:5px;background:none;border:0;padding:0;font:inherit;color:#3a2a17;cursor:pointer}
+.xn-dot{position:relative;display:grid;place-items:center;width:64px;height:64px;border-radius:50%;background:#e8873a;border:4px solid #fff6dc;box-shadow:0 5px 0 rgba(90,58,26,.45),0 10px 14px rgba(90,58,26,.25);transition:transform .15s ease-out}
+.xn-dot b{font-size:1.7rem;line-height:1;color:#fff}
+.xn.done .xn-dot{background:#2f8f5b}
+.xn.boss .xn-dot{width:86px;height:86px;background:#c8341f}
+.xn.boss .xn-dot b{font-size:2.2rem}
+.xn.boss .ic-crown{position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:32px;height:32px}
+.xn.locked{cursor:not-allowed}
+.xn.locked .xn-dot{background:#cbbf9f;box-shadow:0 5px 0 rgba(90,58,26,.25)}
+.xn.locked .xn-dot b{color:#f8f0d8}
+.xn.locked .xn-name{opacity:.7}
+.xn-name{background:rgba(255,250,232,.94);padding:1px 11px;border-radius:999px;font-weight:800;font-size:.92rem;white-space:nowrap;box-shadow:0 2px 0 rgba(90,58,26,.2)}
+.xn-stars{display:flex;gap:2px;height:20px;align-items:center}
+.xn-stars .ic{width:19px;height:19px}
+.xn:hover:not([disabled]) .xn-dot{transform:translateY(-4px)}
+@media (prefers-reduced-motion:reduce){.xn-dot,.df-hud .btn{transition:none}}
+.exp-hint{display:none;margin:12px 0 0;text-align:center;color:var(--cream-2);font-size:.95rem}
+@media (max-width:820px){.exp-hint{display:block}}
+.stars{display:flex;gap:8px;justify-content:center;margin:6px 0 10px}
+.stars .ic{width:46px;height:46px}
