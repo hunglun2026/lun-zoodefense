@@ -128,9 +128,9 @@
       const v = take("enemy", makeEnemy);
       const sz = e.def.size;
       const st = tex["enemy_" + e.type];
-      v.body.texture = st || emojiTex(e.def.emoji); v.body.anchor.set(0.5, st ? 0.86 : 0.78);
+      v.body.texture = st || emojiTex(e.def.emoji); v.body.anchor.set(0.5, e.def.boss ? 0.64 : st ? 0.86 : 0.78);   // 魔王圖很大，錨點抬高，頭才不會被舞台上緣切掉
       v.body.width = v.body.height = sz * (st ? 1.7 : 1.15); v.base = v.body.scale.x; v.flip = 1;
-      v.shadow.scale.set(sz / 40); v.c.visible = true; v.c.alpha = 1; v.c.scale.set(0.3); v.born = 0; v.dying = 0; v.phase = Math.random() * 6;
+      v.shadow.scale.set(sz / 40); v.shadow.y = e.def.boss ? sz * 0.62 : 0; v.c.visible = true; v.c.alpha = 1; v.c.scale.set(0.3); v.born = 0; v.dying = 0; v.phase = Math.random() * 6;
       v.body.tint = 0xffffff; v.sz = sz; v.e = e;
       eView.set(e.id, v);
       if (e.def.boss) shake(10, 0.6);
